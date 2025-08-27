@@ -5,7 +5,7 @@ const API_BASE_URL = "https://notehub-public.goit.study/api";
 const NOTES_ENDPOINT = "/notes";
 
 
-const myKey = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+const myKey = process.env.NEXT_PUBLIC_API_TOKEN;
 
 if (!myKey) {
   throw new Error("NOTEHUB_TOKEN is not defined in environment variables");

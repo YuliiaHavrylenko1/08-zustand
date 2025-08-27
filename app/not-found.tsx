@@ -1,4 +1,4 @@
-import styles from './not-found.module.css';
+import styles from './Not-found.module.css';
 
 export default function NotFoundPage() {
   return (
@@ -10,3 +10,20 @@ export default function NotFoundPage() {
     </div>
   );
 }
+export const metadata = {
+  title: 'Page Not Found — NoteHub',
+  description: 'The page you are looking for does not exist or has been moved.',
+  openGraph: {
+    title: 'Page Not Found — NoteHub',
+    description: 'The page you are looking for does not exist or has been moved.',
+    url: 'https://your-deployed-app.vercel.app/not-found',
+    images: [
+      {
+        url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'NoteHub 404 Open Graph Image',
+      },
+    ],
+  },
+};
