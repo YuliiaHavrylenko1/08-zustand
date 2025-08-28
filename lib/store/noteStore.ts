@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface Draft {
   title: string;
@@ -19,32 +19,19 @@ const initialDraft: Draft = {
   tag: 'Todo',
 };
 
-const localStorageStorage = {
-  getItem: (name: string) => {
-    const item = localStorage.getItem(name);
-    return item ? JSON.parse(item) : null;
-  },
-  setItem: (name: string, value: unknown) => {
-    localStorage.setItem(name, JSON.stringify(value));
-  },
-  removeItem: (name: string) => {
-    localStorage.removeItem(name);
-  },
-};
-
 export const useNoteStore = create<NoteStore>()(
   persist(
     (set) => ({
       draft: initialDraft,
       setDraft: (note) =>
-        set((state: NoteStore) => ({
+        set((state) => ({
           draft: { ...state.draft, ...note },
         })),
       clearDraft: () => set({ draft: initialDraft }),
     }),
     {
       name: 'note-draft',
-      storage: localStorageStorage,
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

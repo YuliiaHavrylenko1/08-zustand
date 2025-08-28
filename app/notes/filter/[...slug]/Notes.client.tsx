@@ -1,16 +1,13 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-
 import { fetchNotes } from '@/lib/api';
 import { Note } from '@/types/note';
 
 import css from './Notes.module.css';
-
 import NoteList from '@/components/NoteList/NoteList';
 import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
@@ -30,29 +27,22 @@ export default function NotesClient({ notes: initialNotes, totalPages: initialTo
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
-  const [currentTag, setCurrentTag] = useState(activeTag);
-
   const [debouncedSearch] = useDebounce(searchQuery, 300);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    setCurrentTag(activeTag);
-    setPage(1);
-    setSearchQuery('');
-    setInputValue('');
-  }, [activeTag]);
+  const tag = activeTag === 'All' ? undefined : activeTag;
 
   const { data, isLoading, isError } = useQuery<FetchNotesResp>({
-    queryKey: ['notes', page, debouncedSearch, currentTag],
+    queryKey: ['notes', page, debouncedSearch, tag],
     queryFn: () =>
       fetchNotes({
         page,
         perPage: 12,
         search: debouncedSearch || undefined,
-        tag: currentTag && currentTag !== 'All' ? currentTag : undefined,
+        tag,
       }),
     initialData:
-      page === 1 && debouncedSearch === '' && (currentTag === 'All' || !currentTag)
+      page === 1 && !debouncedSearch && !tag
         ? {
             notes: initialNotes,
             totalPages: initialTotalPages,
@@ -61,14 +51,14 @@ export default function NotesClient({ notes: initialNotes, totalPages: initialTo
     staleTime: 5000,
   });
 
+  const notes = data?.notes ?? [];
+  const totalPages = data?.totalPages ?? 1;
+
   const handleSearchChange = (value: string) => {
     setInputValue(value);
     setSearchQuery(value);
     setPage(1);
   };
-
-  const notes = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 1;
 
   return (
     <div className={css.app}>
@@ -80,7 +70,7 @@ export default function NotesClient({ notes: initialNotes, totalPages: initialTo
         </Link>
       </header>
 
-      <h2>Notes for tag: {currentTag}</h2>
+      <h2>Notes for tag: {activeTag}</h2>
 
       {isLoading && <p>Loading, please wait...</p>}
 
@@ -92,7 +82,6 @@ export default function NotesClient({ notes: initialNotes, totalPages: initialTo
       )}
 
       {!isLoading && !isError && notes.length > 0 && <NoteList notes={notes} />}
-
       {!isLoading && !isError && notes.length === 0 && <p>No notes found for this filter.</p>}
     </div>
   );

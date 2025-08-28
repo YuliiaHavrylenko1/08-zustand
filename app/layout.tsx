@@ -3,6 +3,7 @@ import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
 import TanStackProvider from '@/components/TanStackProvider/TanStackProvider';
 import { Roboto } from 'next/font/google';
+import type { Metadata } from 'next';
 
 const roboto = Roboto({
   weight: ['400', '700'],
@@ -11,12 +12,14 @@ const roboto = Roboto({
   variable: '--font-roboto',
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'NoteHub',
-  description: 'NoteHub is a powerful note-taking app that helps you create, organize, and manage your notes efficiently.',
+  description:
+    'NoteHub is a powerful note-taking app that helps you create, organize, and manage your notes efficiently.',
   openGraph: {
     title: 'NoteHub',
-    description: 'NoteHub is a powerful note-taking app that helps you create, organize, and manage your notes efficiently.',
+    description:
+      'NoteHub is a powerful note-taking app that helps you create, organize, and manage your notes efficiently.',
     url: 'https://your-deployed-app.vercel.app',
     images: [
       {
