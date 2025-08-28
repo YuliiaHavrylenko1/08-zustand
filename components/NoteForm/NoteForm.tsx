@@ -1,21 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useNoteStore } from '@/lib/store/noteStore';
 import { createNote } from '@/lib/api';
 import { Note, NoteTag } from '@/types/note';
 import css from './NoteForm.module.css';
 
-interface NoteFormProps {
-  formAction: (formData: FormData) => Promise<void>;
-}
-
-export default function NoteForm({ formAction }: NoteFormProps) {
+export default function NoteForm() {
   const draft = useNoteStore((state) => state.draft);
   const setDraft = useNoteStore((state) => state.setDraft);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [title, setTitle] = useState(draft.title);
   const [content, setContent] = useState(draft.content);
@@ -27,10 +24,11 @@ export default function NoteForm({ formAction }: NoteFormProps) {
     setTag(draft.tag as NoteTag);
   }, [draft]);
 
+  const validTags: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
   const isValid =
     title.length >= 3 &&
     title.length <= 50 &&
-    ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'].includes(tag);
+    validTags.includes(tag);
 
   const { mutateAsync, isPending, isError, error } = useMutation({
     mutationFn: async (noteData: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -38,7 +36,8 @@ export default function NoteForm({ formAction }: NoteFormProps) {
     },
     onSuccess: () => {
       setDraft({ title: '', content: '', tag: 'Todo' });
-      router.push('/notes');
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      router.back();
     },
   });
 
@@ -53,9 +52,10 @@ export default function NoteForm({ formAction }: NoteFormProps) {
     } else if (name === 'content') {
       setContent(value);
       setDraft({ content: value });
-    } else if (name === 'tag') {
-      setTag(value as NoteTag);
-      setDraft({ tag: value as NoteTag });
+    } else if (name === 'tag' && validTags.includes(value as NoteTag)) {
+      const v = value as NoteTag;
+      setTag(v);
+      setDraft({ tag: v });
     }
   };
 
@@ -106,11 +106,9 @@ export default function NoteForm({ formAction }: NoteFormProps) {
           onChange={handleChange}
           required
         >
-          <option value="Todo">Todo</option>
-          <option value="Work">Work</option>
-          <option value="Personal">Personal</option>
-          <option value="Meeting">Meeting</option>
-          <option value="Shopping">Shopping</option>
+          {validTags.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
         </select>
       </div>
 
@@ -129,7 +127,7 @@ export default function NoteForm({ formAction }: NoteFormProps) {
 
       {isError && (
         <div className={css.error}>
-          <p>Error: {error instanceof Error ? error.message : 'An error occurred'}</p>
+          <p>{error instanceof Error ? error.message : 'An error occurred'}</p>
         </div>
       )}
     </form>
